@@ -14,9 +14,9 @@ struct StdIo {
 	stderr: ChildStderr
 }
 
-fn startSubprocess() -> Result<StdIo, std::io::Error> {
+fn start_subprocess(ip: &str) -> Result<StdIo, std::io::Error> {
 	let child = Command::new("ping")
-		.arg("8.8.8.8")
+		.arg(ip)
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
@@ -30,6 +30,7 @@ fn startSubprocess() -> Result<StdIo, std::io::Error> {
 	Ok(stdio)
 }
 
-fn main() {
+fn main() -> Result<(), std::io::Error> {
 	
+	Ok(())
 }
