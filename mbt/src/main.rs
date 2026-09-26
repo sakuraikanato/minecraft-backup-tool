@@ -45,6 +45,8 @@ async fn read_line(stdout: ChildStdout) {
 	}
 }
 
+async fn input()
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), tokio::io::Error> {
 	let stdio1 = start_subprocess("8.8.8.8").unwrap();
