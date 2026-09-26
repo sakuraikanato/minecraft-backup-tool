@@ -6,21 +6,61 @@
 // 	Stdio 
 // };
 
-use tokio::process::{
-	ChildStdin,
-	ChildStdout,
-	ChildStderr,
-	Command
+use tokio::{
+	io::{self, AsyncBufReadExt, BufReader}, process::{
+		ChildStderr, ChildStdin, ChildStdout, Command
+	}
 };
-use std::{println, process::Stdio};
+use std::{path::Path, println, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
 use futures_util::stream::StreamExt;
+use std::sync::atomic::{AtomicI32, Ordering};
+use std::path::PathBuf;
+
 struct StdIo {
 	stdin: ChildStdin,
 	stdout: ChildStdout,
 	stderr: ChildStderr
 }
 
+enum State {
+	Stopped,
+	Starting,
+	Running,
+	Stopping
+}
+
+struct Server {
+	name: String,
+	description: Option<String>,
+	state: State,
+	io: Option<StdIo>,
+	path: PathBuf,
+}
+
+struct Manager {
+	servers: Vec<Server>
+}
+
+impl Manager {
+	fn create(mut self, name: &str, description: Option<&str>, path: &Path) {
+		let des = match description {
+			Some(v) => Some(String::from(v)), 
+			None => None
+		};
+		let server = Server {
+				name: String::from(name),
+				description: des,
+				state: State::Stopped,
+				io: None,
+				path: path.to_path_buf()
+			};
+		self.servers.push(server);
+	}
+}
+
+
+static CURRENT_NUM: AtomicI32 = AtomicI32::new(-1);
 
 fn start_subprocess(ip: &str) -> Result<StdIo, std::io::Error> {
 	let mut child = Command::new("ping")
@@ -45,15 +85,7 @@ async fn read_line(stdout: ChildStdout) {
 	}
 }
 
-async fn input()
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), tokio::io::Error> {
-	let stdio1 = start_subprocess("8.8.8.8").unwrap();
-	let stdio2 = start_subprocess("1.1.1.1").unwrap();
-	let task1 = tokio::spawn(read_line(stdio1.stdout));
-	let task2 = tokio::spawn(read_line(stdio2.stdout));
-
-	let _ = tokio::try_join!(task1, task2);
 	Ok(())
 }
