@@ -43,7 +43,14 @@ struct Manager {
 }
 
 impl Manager {
-	fn create(mut self, name: &str, description: Option<&str>, path: &Path) {
+	fn get(&self, index: usize) -> Option<&Server> {
+		match self.servers.get(index) {
+			Some(v) => Some(v),
+			None => None
+		}
+	}
+
+	fn create(&mut self, name: &str, description: Option<&str>, path: &Path) {
 		let des = match description {
 			Some(v) => Some(String::from(v)), 
 			None => None
