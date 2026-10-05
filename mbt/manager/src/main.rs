@@ -206,28 +206,28 @@ fn create_chat(list: &mut Manager) {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), tokio::io::Error> {
-	let mut server_list = Manager {servers: Vec::<Server>::new()};
-	let mut input = BufReader::new(io::stdin()).lines();
+	// let mut server_list = Manager {servers: Vec::<Server>::new()};
+	// let mut input = BufReader::new(io::stdin()).lines();
 	
-	printfl("mbt $ ");
-	while let Some(line) = input.next_line().await? {
-		let commands: Vec<&str> = line.split(" ").collect();
-		if CURRENT_NUM.load(Ordering::Relaxed) == -1 {
-			match commands[0] {
-				"exit" => { return Ok(()) }
-				"info" => { println!("{}", server_list.get(commands[1].parse::<usize>().unwrap()).unwrap()); } // メモ：将来的にここはDBのidから検索させたい
-				"list" => { println!("{}", server_list.get_all()) }, // テスト出力
-				"create" => {create_chat(&mut server_list);},
-				_ => {println!("errer: unknown command {}", commands[0])}
-			}
-		} else {
-			if commands[0].starts_with(":") {
+	// printfl("mbt $ ");
+	// while let Some(line) = input.next_line().await? {
+	// 	let commands: Vec<&str> = line.split(" ").collect();
+	// 	if CURRENT_NUM.load(Ordering::Relaxed) == -1 {
+	// 		match commands[0] {
+	// 			"exit" => { return Ok(()) }
+	// 			"info" => { println!("{}", server_list.get(commands[1].parse::<usize>().unwrap()).unwrap()); } // メモ：将来的にここはDBのidから検索させたい
+	// 			"list" => { println!("{}", server_list.get_all()) }, // テスト出力
+	// 			"create" => {create_chat(&mut server_list);},
+	// 			_ => {println!("errer: unknown command {}", commands[0])}
+	// 		}
+	// 	} else {
+	// 		if commands[0].starts_with(":") {
 
-			} else {
+	// 		} else {
 
-			}
-		}
-		printfl("mbt $ ");
-	}
+	// 		}
+	// 	}
+	// 	printfl("mbt $ ");
+	// }
 	Ok(())
 }
