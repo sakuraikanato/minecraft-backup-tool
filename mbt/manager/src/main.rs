@@ -8,147 +8,20 @@
 
 // 非同期用
 use tokio::{
-	io::{self, AsyncBufReadExt, BufReader}, 
+	io::{self, AsyncBufReadExt, AsyncWrite, BufReader}, 
 	process::{
 		ChildStderr, ChildStdin, ChildStdout, Command
 	}
 };
-use core::fmt;
+
+use protocol::servers::*;
+
 use std::{io::{Write, stdin}, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
 use futures_util::stream::StreamExt;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::path::PathBuf;
 
-// --- テーブル出力 ---
-use colored::*;
-use tabled::{Table, Tabled};
-// -------------------
-
-
-
-#[derive(Debug)]
-struct StdIo {
-	stdin: ChildStdin,
-	stdout: ChildStdout,
-	stderr: ChildStderr
-}
-
-#[derive(Debug)]
-enum State {
-	Stopped,
-	Starting,
-	Running,
-	Stopping
-}
-
-#[derive(Debug)]
-struct Server {
-	name: String,
-	description: Option<String>,
-	state: State,
-	io: Option<StdIo>,
-	path: PathBuf,
-}
-
-#[derive(Tabled)]
-struct OutServer {
-	#[tabled(rename = "名前")]
-	name: String,
-
-	#[tabled(rename = "情報")]
-	description: String,
-
-	#[tabled(rename = "状態")]
-	state: String,
-
-	#[tabled(rename = "パス")]
-	path: String,
-}
-
-impl fmt::Display for Server {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let color_state = match self.state {
-			State::Stopped => "Stopped".bright_black().to_string(),
-			State::Stopping => "Stopping".yellow().to_string(),
-			State::Starting => "Starting".cyan().to_string(),
-			State::Running => "Running".green().bold().to_string()
-		};
-
-		let data = vec![OutServer {
-			name: self.name.clone(),
-			description: match &self.description {
-				Some(v) => v.clone(),
-				None => "説明なし".to_string()
-			},
-			state: color_state,
-			path: self.path.to_str().unwrap().to_string()
-		}];
-
-		let table = Table::new(data).to_string();
-		let _ = write!(f, "{}", table);
-		Ok(())
-	}
-}
-
-// サーバーの情報を格納するための構造体
-struct Manager {
-	servers: Vec<Server>
-}
-
-impl Manager {
-	fn get_all(&self) -> &Manager {
-		&self
-	}
-
-	fn get(&self, index: usize) -> Option<&Server> {
-		match self.servers.get(index) {
-			Some(v) => Some(v),
-			None => None
-		}
-	}
-
-	fn create(&mut self, name: &String, description: &Option<String>, path: &Path) {
-		let des = match description {
-			Some(v) => Some(String::from(v)), 
-			None => None
-		};
-		let server = Server {
-				name: String::from(name),
-				description: des,
-				state: State::Stopped,
-				io: None,
-				path: path.to_path_buf()
-			};
-		self.servers.push(server);
-	}
-}
-
-impl fmt::Display for Manager {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let data:Vec<OutServer> = self.servers.iter().map(|s| {
-			let color_state = match s.state {
-					State::Stopped => "Stopped".bright_black().to_string(),
-					State::Stopping => "Stopping".yellow().to_string(),
-					State::Starting => "Starting".cyan().to_string(),
-					State::Running => "Running".green().bold().to_string()
-				};
-			OutServer {
-				name: s.name.clone(),
-				description: match &s.description {
-					Some(v) => v.clone(),
-					None => "説明なし".to_string()
-				},
-				state: color_state,
-				path: s.path.to_str().unwrap().to_string()
-			}
-		}).collect();
-
-		let table = Table::new(data).to_string();
-		let _ = write!(f, "{}", table);
-		Ok(())
-	}
-}
 
 
 static CURRENT_NUM: AtomicI32 = AtomicI32::new(-1);
