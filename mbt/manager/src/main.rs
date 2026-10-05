@@ -178,6 +178,7 @@ fn printfl(str: &str) {
 fn create_chat(list: &mut Manager) {
 	let mut name = String::new();
 	let mut desc = String::new();
+	#[allow(unused_assignments)]
 	let mut opt_desc = Option::Some(String::new());
 	let mut path = String::new();
 	while name.trim().is_empty() {

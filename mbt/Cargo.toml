@@ -1,11 +1,9 @@
-[package]
-name = "mbt"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "manager",
+    "cli",
+]
 
-[dependencies]
+[workspace.dependencies]
 tokio = {version = "1.53.1", features=["process", "io-std", "macros", "rt"]}
 tokio-util = {version = "0.7.19", features=["full"]}
-futures-util = "0.3"
-colored = "3.1"
-tabled = { version = "0.22.0", features = ["ansi"]}
