@@ -9,3 +9,4 @@ tokio-util = { workspace = true }
 futures-util = "0.3"
 colored = "3.1"
 tabled = { version = "0.22.0", features = ["ansi"]}
+interprocess = { workspace = true }

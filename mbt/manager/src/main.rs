@@ -6,6 +6,7 @@
 // 	Stdio 
 // };
 
+// 非同期用
 use tokio::{
 	io::{self, AsyncBufReadExt, BufReader}, 
 	process::{
@@ -18,8 +19,13 @@ use tokio_util::codec::{FramedRead, LinesCodec};
 use futures_util::stream::StreamExt;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::path::PathBuf;
+
+// --- テーブル出力 ---
 use colored::*;
 use tabled::{Table, Tabled};
+// -------------------
+
+
 
 #[derive(Debug)]
 struct StdIo {
@@ -85,6 +91,7 @@ impl fmt::Display for Server {
 	}
 }
 
+// サーバーの情報を格納するための構造体
 struct Manager {
 	servers: Vec<Server>
 }
@@ -170,6 +177,7 @@ async fn read_line(stdout: ChildStdout) {
 	}
 }
 
+// 改行せずにコンソールに出力
 fn printfl(str: &str) {
 	print!("{}", str);
 	std::io::stdout().flush().unwrap();
@@ -229,5 +237,6 @@ async fn main() -> Result<(), tokio::io::Error> {
 	// 	}
 	// 	printfl("mbt $ ");
 	// }
+	
 	Ok(())
 }
