@@ -11,7 +11,8 @@ use tokio::{
 	io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader}, 
 	process::{
 		ChildStderr, ChildStdin, ChildStdout, Command
-	}
+	},
+	try_join
 };
 
 use protocol::servers::*;
@@ -23,8 +24,8 @@ use std::sync::atomic::{AtomicI32, Ordering};
 use std::path::PathBuf;
 
 use interprocess::local_socket::{
-	tokio::{ prelude::*, Stream },
-	GenericFilePath, GenericNamespaced
+    tokio::{prelude::*, Stream},
+    GenericNamespaced, GenericFilePath, ListenerOptions,
 };
 
 
@@ -115,21 +116,40 @@ async fn main() -> Result<(), tokio::io::Error> {
 	// 	}
 	// 	printfl("mbt $ ");
 	// }
-	let name = if GenericNamespaced::is_supported() {
+	  let name = if GenericNamespaced::is_supported() {
         "mms.sock".to_ns_name::<GenericNamespaced>()?
     } else {
         "/tmp/mms.sock".to_fs_name::<GenericFilePath>()?
     };
 
-	let mut buffer = String::new();
+	let listener = match ListenerOptions::new().name(name).create_tokio() {
+		Err(e) if e.kind() == io::ErrorKind::AddrInUse => {
+			eprintln!("他プロセスが使用中です");
+			return Err(e.into());
+		}
+		x => x?
+	};
 
 	loop {
-		let conn = Stream::connect(name.clone()).await?;
+		let conn = match listener.accept().await {
+			Ok(c) => c,
+			Err(e) => {
+				eprintln!("接続の確立に失敗しました: {e}");
+				return Err(e.into());
+			}
+		};
+
+		let mut buff = String::new();
+
 		let mut recver = BufReader::new(&conn);
 		let mut sender = &conn;
 
-		let _ = recver.read_line(&mut buffer).await;
-		let _ = sender.write_all(b"get message: {buffer}\n");
+		let rec = recver.read_line(&mut buff);
+		let send = sender.write_all(b"test\n");
+
+		try_join!(send, rec);
+
+		println!("success: {buff}");
 	}
 	Ok(())
 }
