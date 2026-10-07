@@ -8,7 +8,7 @@
 
 // 非同期用
 use tokio::{
-	io::{self, AsyncBufReadExt, AsyncWrite, BufReader}, 
+	io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader}, 
 	process::{
 		ChildStderr, ChildStdin, ChildStdout, Command
 	}
@@ -23,7 +23,7 @@ use std::sync::atomic::{AtomicI32, Ordering};
 use std::path::PathBuf;
 
 use interprocess::local_socket::{
-	tokio::{ prelude::*, Stream},
+	tokio::{ prelude::*, Stream },
 	GenericFilePath, GenericNamespaced
 };
 
@@ -123,11 +123,13 @@ async fn main() -> Result<(), tokio::io::Error> {
 
 	let mut buffer = String::new();
 
-	while let conn = Stream::connect(name).await? {
+	loop {
+		let conn = Stream::connect(name.clone()).await?;
 		let mut recver = BufReader::new(&conn);
 		let mut sender = &conn;
 
-		
+		let _ = recver.read_line(&mut buffer).await;
+		let _ = sender.write_all(b"get message: {buffer}\n");
 	}
 	Ok(())
 }
