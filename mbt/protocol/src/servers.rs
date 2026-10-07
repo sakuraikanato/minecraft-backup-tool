@@ -7,7 +7,7 @@ use colored::*;
 use tabled::Table;
 // -------------------
 
-use super::view::OutServer;
+use super::views::OutServer;
 
 #[derive(Debug)]
 pub struct StdIo {

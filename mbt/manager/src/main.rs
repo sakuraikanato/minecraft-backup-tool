@@ -22,6 +22,11 @@ use futures_util::stream::StreamExt;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::path::PathBuf;
 
+use interprocess::local_socket::{
+	tokio::{ prelude::*, Stream},
+	GenericFilePath, GenericNamespaced
+};
+
 
 
 static CURRENT_NUM: AtomicI32 = AtomicI32::new(-1);
@@ -110,6 +115,19 @@ async fn main() -> Result<(), tokio::io::Error> {
 	// 	}
 	// 	printfl("mbt $ ");
 	// }
-	
+	let name = if GenericNamespaced::is_supported() {
+        "mms.sock".to_ns_name::<GenericNamespaced>()?
+    } else {
+        "/tmp/mms.sock".to_fs_name::<GenericFilePath>()?
+    };
+
+	let mut buffer = String::new();
+
+	while let conn = Stream::connect(name).await? {
+		let mut recver = BufReader::new(&conn);
+		let mut sender = &conn;
+
+		
+	}
 	Ok(())
 }
