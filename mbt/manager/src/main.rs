@@ -149,7 +149,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 
 		try_join!(send, rec);
 
-		println!("success: {buff}");
+		println!("get message: {buff}");
 	}
 	Ok(())
 }
