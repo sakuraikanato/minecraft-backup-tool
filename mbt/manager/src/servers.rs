@@ -96,7 +96,7 @@ impl Manager {
 
 impl fmt::Display for Manager {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let data:Vec<OutServer> = self.servers.iter().map(|s| {
+		let data:Vec<OutServer> = self.servers.iter().map(|(_, s)| {
 			let color_state = match s.state {
 					State::Stopped => "Stopped".bright_black().to_string(),
 					State::Stopping => "Stopping".yellow().to_string(),
