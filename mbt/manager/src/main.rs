@@ -156,7 +156,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 		};
 		match Request {
 			Request::List => server_list.list(),
-			Request::Info { server_id } => server_list.info(server_id as usize),
+			Request::Info { server_id } => server_list.info(server_id),
 			Request::Create { name, description, path } => Manager::create(&name, &description, &path),
 			Request::Update { server_id, name, description, path } => {
 				let mut server = &mut server_list.servers[server_id as usize];

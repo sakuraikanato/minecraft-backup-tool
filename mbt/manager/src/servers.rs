@@ -1,6 +1,7 @@
 use tokio::process::{ ChildStdin, ChildStdout, ChildStderr };
-use std::path::{ PathBuf, Path };
+use std::{collections::HashMap, io, path::{ Path, PathBuf }, process::exit, sync::atomic::{AtomicI32, Ordering}, thread::current};
 use core::fmt;
+use std::fs;
 
 // --- テーブル出力 ---
 use colored::*;
@@ -8,6 +9,33 @@ use tabled::Table;
 // -------------------
 
 use protocol::views::OutServer;
+
+const DATA_PATH: &str = "../data/server_id.txt";
+
+fn generate_next_id() -> i32 {
+	static CURRENT_ID: AtomicI32 = AtomicI32::new(-1);
+	if CURRENT_ID.load(Ordering::Relaxed) == -1 {
+		let mut next_id = match fs::read_to_string(DATA_PATH) {
+			Ok(v) => match v.trim().parse() {
+				Ok(v) => v,
+				Err(e) => {
+					eprintln!("server_idファイルが不正です: {e}");
+					panic!();
+				}
+			}
+			Err(e) => {
+				eprintln!("server_idファイルが見つかりません: {e}");
+				panic!();
+			}
+		};
+		next_id += 1;
+		CURRENT_ID.store(next_id, Ordering::Relaxed);
+	} else {
+		CURRENT_ID.fetch_add(1, Ordering::Relaxed);
+	}
+	fs::write(DATA_PATH, CURRENT_ID.load(Ordering::Relaxed).to_string());
+	CURRENT_ID.load(Ordering::Relaxed)
+}
 
 #[derive(Debug)]
 pub struct StdIo {
@@ -35,7 +63,7 @@ pub struct Server {
 
 // サーバーの情報を格納するための構造体
 pub struct Manager {
-	pub servers: Vec<Server>
+	pub servers: HashMap<i32, Server>
 }
 
 impl Manager {
@@ -43,8 +71,8 @@ impl Manager {
 		&self
 	}
 
-	fn info(&self, index: usize) -> Option<&Server> {
-		match self.servers.get(index) {
+	fn info(&self, server_id: i32) -> Option<&Server> {
+		match self.servers.get(&server_id) {
 			Some(v) => Some(v),
 			None => None
 		}
@@ -62,7 +90,7 @@ impl Manager {
 				io: None,
 				path: path.to_path_buf()
 			};
-		self.servers.push(server);
+		self.servers.insert(generate_next_id(), server);
 	}
 }
 
