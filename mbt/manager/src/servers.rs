@@ -1,5 +1,5 @@
 use tokio::process::{ ChildStdin, ChildStdout, ChildStderr };
-use std::{collections::HashMap, io, path::{ Path, PathBuf }, process::exit, sync::atomic::{AtomicI32, Ordering}, thread::current};
+use std::{collections::HashMap, fmt::Error, io, path::{ Path, PathBuf }, process::exit, sync::atomic::{AtomicI32, Ordering}, thread::current};
 use core::fmt;
 use std::fs;
 
@@ -8,7 +8,9 @@ use colored::*;
 use tabled::Table;
 // -------------------
 
-use protocol::views::OutServer;
+use protocol::{
+	views::OutServer,
+};
 
 const DATA_PATH: &str = "../data/server_id.txt";
 
@@ -67,18 +69,18 @@ pub struct Manager {
 }
 
 impl Manager {
-	fn list(&self) -> &Manager {
-		&self
+	pub fn list(&self) -> &HashMap<i32, Server> {
+		&self.servers
 	}
 
-	fn info(&self, server_id: i32) -> Option<&Server> {
+	pub fn info(&self, server_id: i32) -> Option<&Server> {
 		match self.servers.get(&server_id) {
 			Some(v) => Some(v),
 			None => None
 		}
 	}
 
-	fn create(&mut self, name: &String, description: &Option<String>, path: &Path) {
+	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) -> Result<(), Error> {
 		let des = match description {
 			Some(v) => Some(String::from(v)), 
 			None => None
@@ -90,7 +92,38 @@ impl Manager {
 				io: None,
 				path: path.to_path_buf()
 			};
-		self.servers.insert(generate_next_id(), server);
+		match self.servers.insert(generate_next_id(), server) {
+			Some(_) => Ok(()),
+			None => Err(Error)
+		}
+	}
+
+	pub fn update(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<PathBuf>) -> Result<(), Error> {
+		let server = match self.servers.get_mut(&server_id) {
+			Some(v) => v,
+			None => return Err(Error)
+		};
+
+		server.name = match name {
+			Some(s) => s.to_string(),
+			None => server.name.clone()
+		};
+		server.description = match description {
+			Some(s) => Some(s.to_string()),
+			None => server.description.clone()
+		};
+		server.path = match path {
+			Some(p) => PathBuf::from(p),
+			None => server.path.clone()
+		};
+		Ok(())
+	}
+
+	pub fn delete(&mut self, server_id: i32) -> Result<(), Error> {
+		match self.servers.remove(&server_id) {
+			Some(_) => Ok(()),
+			None => Err(Error)
+		}
 	}
 }
 

@@ -17,8 +17,9 @@ use tokio::{
 
 use protocol::{types::Request};
 mod servers;
+use servers::*;
 
-use std::{io::{Write, stdin}, path::Path, process::Stdio};
+use std::{collections::HashMap, fmt::Debug, io::{ErrorKind::ConnectionAborted, Write, stdin}, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
 use futures_util::stream::StreamExt;
 use std::sync::atomic::{AtomicI32, Ordering};
@@ -57,66 +58,14 @@ async fn read_line(stdout: ChildStdout) {
 	}
 }
 
-// 改行せずにコンソールに出力
-fn printfl(str: &str) {
-	print!("{}", str);
-	std::io::stdout().flush().unwrap();
-}
-
-fn create_chat(list: &mut Manager) {
-	let mut name = String::new();
-	let mut desc = String::new();
-	#[allow(unused_assignments)]
-	let mut opt_desc = Option::Some(String::new());
-	let mut path = String::new();
-	while name.trim().is_empty() {
-		printfl("サーバー名を入力してください： ");
-		match stdin().read_line(&mut name) {
-			Ok(_n) => {},
-			Err(err) => {println!("{}", err); return}
-		};
-	}
-	printfl("サーバー説明を入力してください： ");
-	match stdin().read_line(&mut desc) {
-		Ok(_n) => { opt_desc = Some(desc) },
-		Err(_err) => { opt_desc = None } 
-	};
-	while path.trim().is_empty() {
-		printfl("サーバーpathを入力してください： ");
-		match stdin().read_line(&mut path) {
-			Ok(_n) => {},
-			Err(err) => {println!("{}", err); return}
-		};
-	}
-
-	list.create(&name, &opt_desc, Path::new(&path));
+async fn send<T: Debug>(sender: &Stream, object: T) {
+	println!("{:?}", object); //テスト
 }
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), tokio::io::Error> {
-	let mut server_list = Manager {servers: Vec::<Server>::new()};
-	// let mut input = BufReader::new(io::stdin()).lines();
-	
-	// printfl("mbt $ ");
-	// while let Some(line) = input.next_line().await? {
-	// 	let commands: Vec<&str> = line.split(" ").collect();
-	// 	if CURRENT_NUM.load(Ordering::Relaxed) == -1 {
-	// 		match commands[0] {
-	// 			"exit" => { return Ok(()) }
-	// 			"info" => { println!("{}", server_list.get(commands[1].parse::<usize>().unwrap()).unwrap()); } // メモ：将来的にここはDBのidから検索させたい
-	// 			"list" => { println!("{}", server_list.get_all()) }, // テスト出力
-	// 			"create" => {create_chat(&mut server_list);},
-	// 			_ => {println!("errer: unknown command {}", commands[0])}
-	// 		}
-	// 	} else {
-	// 		if commands[0].starts_with(":") {
+	let mut server_list = Manager {servers: HashMap::<i32, Server>::new()};
 
-	// 		} else {
-
-	// 		}
-	// 	}
-	// 	printfl("mbt $ ");
-	// }
 	let name = if GenericNamespaced::is_supported() {
         "mms.sock".to_ns_name::<GenericNamespaced>()?
     } else {
@@ -146,7 +95,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 		let mut sender = &conn;
 
 		let _ = recver.read_line(&mut buff).await;
-		let reqest = match serde_json::from_str::<Request>(&buff) {
+		let request = match serde_json::from_str::<Request>(&buff) {
 			Ok(j) => j,
 			Err(e) => {
 				let message = format!("リクエスト形式が不正です: {e}\n");
@@ -154,28 +103,57 @@ async fn main() -> Result<(), tokio::io::Error> {
 				continue
 			}
 		};
-		match Request {
-			Request::List => server_list.list(),
-			Request::Info { server_id } => server_list.info(server_id),
-			Request::Create { name, description, path } => Manager::create(&name, &description, &path),
-			Request::Update { server_id, name, description, path } => {
-				let mut server = &mut server_list.servers[server_id as usize];
-				server.name = match name {
-					Some(s) => s,
-					None => server.name
+		let _ = match request {
+			Request::List {} => {
+				let servers = server_list.list();
+				send(sender, servers)
+			}
+			Request::Info { server_id } => { 
+				let server: &Server = match server_list.info(server_id) {
+					Some(v) => v,
+					None => {
+						send(sender, "IDが存在しません");
+						continue;
+					}
 				};
-				server.description = match description {
-					Some(s) => s,
-					None => server.description
-				};
-				server.path = match path {
-					Some(p) => p,
-					None => server.path
-				}
+				send(sender, server);
+				continue;
 			},
-			Request::Delete { server_id }
-
-		}
+			Request::Create { name, description, path } => {
+				match server_list.create(&name, &description, &path) {
+					Ok(v) => v,
+					Err(_) => {
+						send(sender, "IDが存在しません");
+						continue;
+					}
+				};
+				continue;
+			},
+			Request::Update { server_id, name, description, path } => {
+				match server_list.update(server_id, &name, &description, &path){
+					Ok(v) => v,
+					Err(_) => {
+						send(sender, "IDが存在しません");
+						continue;
+					}
+				};
+				continue;
+			},
+			Request::Delete { server_id } => {
+				match server_list.delete(server_id) {
+					Ok(v) => v,
+					Err(_) => {
+						send(sender, "IDが存在しません");
+						continue;
+					}
+				};
+				continue;
+			},
+			_ => {
+				println!("不正、または未実装のコマンドです");
+				continue;
+			}
+		};
 
 
 		println!("get message: {buff}");
