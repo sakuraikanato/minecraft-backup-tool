@@ -39,11 +39,11 @@ pub struct Manager {
 }
 
 impl Manager {
-	pub fn get_all(&self) -> &Manager {
+	pub fn list(&self) -> &Manager {
 		&self
 	}
 
-	pub fn get(&self, index: usize) -> Option<&Server> {
+	pub fn info(&self, index: usize) -> Option<&Server> {
 		match self.servers.get(index) {
 			Some(v) => Some(v),
 			None => None

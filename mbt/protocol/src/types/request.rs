@@ -3,7 +3,12 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type")]
+pub enum Options {
+
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Request {
     #[serde(rename = "list")]
     List {},
@@ -34,5 +39,9 @@ pub enum Request {
     #[serde(rename = "stop")]
     Stop {
         server_id: i32
+    },
+    #[serde(rename = "option")]
+    Option {
+        option: Options
     }
 }
