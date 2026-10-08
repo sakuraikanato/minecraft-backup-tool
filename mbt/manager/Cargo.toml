@@ -11,3 +11,5 @@ interprocess = { workspace = true }
 protocol = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+colored = "3.1"
+tabled = { version = "0.22.0", features = ["ansi"]}

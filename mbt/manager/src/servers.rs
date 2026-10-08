@@ -7,7 +7,7 @@ use colored::*;
 use tabled::Table;
 // -------------------
 
-use super::views::OutServer;
+use protocol::views::OutServer;
 
 #[derive(Debug)]
 pub struct StdIo {
@@ -39,18 +39,18 @@ pub struct Manager {
 }
 
 impl Manager {
-	pub fn list(&self) -> &Manager {
+	fn list(&self) -> &Manager {
 		&self
 	}
 
-	pub fn info(&self, index: usize) -> Option<&Server> {
+	fn info(&self, index: usize) -> Option<&Server> {
 		match self.servers.get(index) {
 			Some(v) => Some(v),
 			None => None
 		}
 	}
 
-	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) {
+	fn create(&mut self, name: &String, description: &Option<String>, path: &Path) {
 		let des = match description {
 			Some(v) => Some(String::from(v)), 
 			None => None

@@ -15,7 +15,8 @@ use tokio::{
 	try_join
 };
 
-use protocol::{servers::*, types::Request};
+use protocol::{types::Request};
+mod servers;
 
 use std::{io::{Write, stdin}, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
@@ -93,7 +94,7 @@ fn create_chat(list: &mut Manager) {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), tokio::io::Error> {
-	// let mut server_list = Manager {servers: Vec::<Server>::new()};
+	let mut server_list = Manager {servers: Vec::<Server>::new()};
 	// let mut input = BufReader::new(io::stdin()).lines();
 	
 	// printfl("mbt $ ");
@@ -116,7 +117,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 	// 	}
 	// 	printfl("mbt $ ");
 	// }
-	  let name = if GenericNamespaced::is_supported() {
+	let name = if GenericNamespaced::is_supported() {
         "mms.sock".to_ns_name::<GenericNamespaced>()?
     } else {
         "/tmp/mms.sock".to_fs_name::<GenericFilePath>()?
@@ -154,7 +155,26 @@ async fn main() -> Result<(), tokio::io::Error> {
 			}
 		};
 		match Request {
-			Request::List => Manager::ge
+			Request::List => server_list.list(),
+			Request::Info { server_id } => server_list.info(server_id as usize),
+			Request::Create { name, description, path } => Manager::create(&name, &description, &path),
+			Request::Update { server_id, name, description, path } => {
+				let mut server = &mut server_list.servers[server_id as usize];
+				server.name = match name {
+					Some(s) => s,
+					None => server.name
+				};
+				server.description = match description {
+					Some(s) => s,
+					None => server.description
+				};
+				server.path = match path {
+					Some(p) => p,
+					None => server.path
+				}
+			},
+			Request::Delete { server_id }
+
 		}
 
 

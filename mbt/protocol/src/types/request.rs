@@ -24,6 +24,7 @@ pub enum Request {
     },
     #[serde(rename = "update")]
     Update {
+        server_id: i32,
         name: Option<String>,
         description: Option<String>,
         path: Option<PathBuf>
