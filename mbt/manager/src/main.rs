@@ -15,7 +15,7 @@ use tokio::{
 	try_join
 };
 
-use protocol::servers::*;
+use protocol::{servers::*, types::Request};
 
 use std::{io::{Write, stdin}, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
@@ -144,10 +144,19 @@ async fn main() -> Result<(), tokio::io::Error> {
 		let mut recver = BufReader::new(&conn);
 		let mut sender = &conn;
 
-		let rec = recver.read_line(&mut buff);
-		let send = sender.write_all(b"test\n");
+		let _ = recver.read_line(&mut buff).await;
+		let reqest = match serde_json::from_str::<Request>(&buff) {
+			Ok(j) => j,
+			Err(e) => {
+				let message = format!("リクエスト形式が不正です: {e}\n");
+				let _ = sender.write_all(&message.as_bytes()).await;
+				continue
+			}
+		};
+		match Request {
+			Request::List => Manager::ge
+		}
 
-		try_join!(send, rec);
 
 		println!("get message: {buff}");
 	}
