@@ -106,52 +106,44 @@ async fn main() -> Result<(), tokio::io::Error> {
 		let _ = match request {
 			Request::List {} => {
 				let servers = server_list.list();
-				send(sender, servers)
+				send(sender, servers).await;
 			}
 			Request::Info { server_id } => { 
 				let server: &Server = match server_list.info(server_id) {
 					Some(v) => v,
 					None => {
-						send(sender, "IDが存在しません");
+						send(sender, "IDが存在しません").await;
 						continue;
 					}
 				};
-				send(sender, server);
-				continue;
+				send(sender, server).await;
 			},
 			Request::Create { name, description, path } => {
 				match server_list.create(&name, &description, &path) {
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません");
-						continue;
+						send(sender, "IDが存在しません").await;
 					}
 				};
-				continue;
 			},
 			Request::Update { server_id, name, description, path } => {
 				match server_list.update(server_id, &name, &description, &path){
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません");
-						continue;
+						send(sender, "IDが存在しません").await;
 					}
 				};
-				continue;
 			},
 			Request::Delete { server_id } => {
 				match server_list.delete(server_id) {
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません");
-						continue;
+						send(sender, "IDが存在しません").await;
 					}
 				};
-				continue;
 			},
 			_ => {
 				println!("不正、または未実装のコマンドです");
-				continue;
 			}
 		};
 
