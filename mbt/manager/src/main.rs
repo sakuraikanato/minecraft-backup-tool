@@ -19,7 +19,7 @@ use protocol::{types::Request};
 mod servers;
 use servers::*;
 
-use std::{collections::HashMap, fmt::Debug, io::{ErrorKind::ConnectionAborted, Write, stdin}, path::Path, process::Stdio};
+use std::{collections::HashMap, fmt::Debug, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
 use futures_util::stream::StreamExt;
 use std::sync::atomic::{AtomicI32, Ordering};
