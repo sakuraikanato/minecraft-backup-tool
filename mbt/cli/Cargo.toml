@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 interprocess = { workspace = true }
 tokio = { workspace = true }
+protocol = { path = "../protocol" }
+serde_json = { workspace = true }

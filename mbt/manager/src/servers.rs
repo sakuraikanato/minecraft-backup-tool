@@ -1,3 +1,4 @@
+use serde::de;
 use tokio::process::{ ChildStdin, ChildStdout, ChildStderr };
 use std::{collections::HashMap, fmt::Error, io, path::{ Path, PathBuf }, process::exit, sync::atomic::{AtomicI32, Ordering}, thread::current};
 use core::fmt;
@@ -12,7 +13,7 @@ use protocol::{
 	views::OutServer,
 };
 
-const DATA_PATH: &str = "../data/server_id.txt";
+const DATA_PATH: &str = "./manager/data/server_id.txt";
 
 fn generate_next_id() -> i32 {
 	static CURRENT_ID: AtomicI32 = AtomicI32::new(-1);
@@ -64,6 +65,8 @@ pub struct Server {
 }
 
 // サーバーの情報を格納するための構造体
+
+#[derive(Debug)]
 pub struct Manager {
 	pub servers: HashMap<i32, Server>
 }
@@ -93,8 +96,8 @@ impl Manager {
 				path: path.to_path_buf()
 			};
 		match self.servers.insert(generate_next_id(), server) {
-			Some(_) => Ok(()),
-			None => Err(Error)
+			Some(_) => Err(Error),
+			None => Ok(())
 		}
 	}
 

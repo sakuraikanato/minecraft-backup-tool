@@ -7,7 +7,7 @@ use interprocess::local_socket::{
 	tokio::{ prelude::*, Stream },
 	GenericFilePath, GenericNamespaced
 };
-use std::io;
+use protocol::types::{ Request, Options };
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,7 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let mut recver = BufReader::new(&conn);
   let mut sender = &conn;
 
-  let message = format!("i'm client\n");
+  let request = Request::List {  };
+  let json = serde_json::to_string(&request)?;
+  let message = format!("{json}\n");
   let send = sender.write_all(message.as_bytes());
   let rec = recver.read_line(&mut buff);
   try_join!(rec, send);

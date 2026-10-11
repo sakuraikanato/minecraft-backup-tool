@@ -58,7 +58,7 @@ async fn read_line(stdout: ChildStdout) {
 	}
 }
 
-async fn send<T: Debug>(sender: &Stream, object: T) {
+async fn send<T: Debug>(sender: &Stream, object: &T) {
 	println!("{:?}", object); //テスト
 }
 
@@ -106,13 +106,13 @@ async fn main() -> Result<(), tokio::io::Error> {
 		let _ = match request {
 			Request::List {} => {
 				let servers = server_list.list();
-				send(sender, servers).await;
+				send(sender, &server_list).await;
 			}
 			Request::Info { server_id } => { 
 				let server: &Server = match server_list.info(server_id) {
 					Some(v) => v,
 					None => {
-						send(sender, "IDが存在しません").await;
+						send(sender, &"IDが存在しません").await;
 						continue;
 					}
 				};
@@ -122,7 +122,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 				match server_list.create(&name, &description, &path) {
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません").await;
+						send(sender, &"IDが存在しません").await;
 					}
 				};
 			},
@@ -130,7 +130,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 				match server_list.update(server_id, &name, &description, &path){
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません").await;
+						send(sender, &"IDが存在しません").await;
 					}
 				};
 			},
@@ -138,7 +138,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 				match server_list.delete(server_id) {
 					Ok(v) => v,
 					Err(_) => {
-						send(sender, "IDが存在しません").await;
+						send(sender, &"IDが存在しません").await;
 					}
 				};
 			},
