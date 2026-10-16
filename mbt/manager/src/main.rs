@@ -15,9 +15,11 @@ use tokio::{
 	try_join
 };
 
-use protocol::{types::Request};
-mod servers;
-use servers::*;
+use protocol::{
+	types::{ Request, Server, StdIo, State }
+};
+mod managers;
+use managers::Manager;
 
 use std::{collections::HashMap, fmt::Debug, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
@@ -150,5 +152,4 @@ async fn main() -> Result<(), tokio::io::Error> {
 
 		println!("get message: {buff}");
 	}
-	Ok(())
 }

@@ -7,3 +7,4 @@ edition = "2024"
 serde = { workspace = true }
 tabled = { version = "0.22.0", features = ["ansi"]}
 tokio = { workspace = true }
+colored = { workspace = true }
