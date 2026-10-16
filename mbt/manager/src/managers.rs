@@ -11,6 +11,7 @@ use tabled::Table;
 
 use protocol::{
 	views::OutServer,
+	types::{ Server, StdIo, State }
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -38,30 +39,6 @@ fn generate_next_id() -> i32 {
 	}
 	fs::write(DATA_PATH, CURRENT_ID.load(Ordering::Relaxed).to_string());
 	CURRENT_ID.load(Ordering::Relaxed)
-}
-
-#[derive(Debug)]
-pub struct StdIo {
-	pub stdin: ChildStdin,
-	pub stdout: ChildStdout,
-	pub stderr: ChildStderr
-}
-
-#[derive(Debug)]
-pub enum State {
-	Stopped,
-	Starting,
-	Running,
-	Stopping
-}
-
-#[derive(Debug)]
-pub struct Server {
-	pub name: String,
-	pub description: Option<String>,
-	pub state: State,
-	pub io: Option<StdIo>,
-	pub path: PathBuf,
 }
 
 // サーバーの情報を格納するための構造体
@@ -149,31 +126,6 @@ impl fmt::Display for Manager {
 				path: s.path.to_str().unwrap().to_string()
 			}
 		}).collect();
-
-		let table = Table::new(data).to_string();
-		let _ = write!(f, "{}", table);
-		Ok(())
-	}
-}
-
-impl fmt::Display for Server {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let color_state = match self.state {
-			State::Stopped => "Stopped".bright_black().to_string(),
-			State::Stopping => "Stopping".yellow().to_string(),
-			State::Starting => "Starting".cyan().to_string(),
-			State::Running => "Running".green().bold().to_string()
-		};
-
-		let data = vec![OutServer {
-			name: self.name.clone(),
-			description: match &self.description {
-				Some(v) => v.clone(),
-				None => "説明なし".to_string()
-			},
-			state: color_state,
-			path: self.path.to_str().unwrap().to_string()
-		}];
 
 		let table = Table::new(data).to_string();
 		let _ = write!(f, "{}", table);

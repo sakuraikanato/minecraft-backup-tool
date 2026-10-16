@@ -11,3 +11,4 @@ tokio-util = {version = "0.7.19", features=["full"]}
 interprocess = { version = "2.4.4", features = ["tokio"] }
 serde = { version = "1.0.229", features = ["derive"]}
 serde_json = { version = "1.0.151" }
+colored = "3.1"
