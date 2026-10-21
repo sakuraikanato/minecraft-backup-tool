@@ -45,6 +45,10 @@ pub enum Request {
     Connect {
         server_id: i32,
     },
+    #[serde(rename = "disconnect")]
+    Disconnect {
+        force: bool
+    },
     #[serde(rename = "option")]
     Option {
         option: Options
