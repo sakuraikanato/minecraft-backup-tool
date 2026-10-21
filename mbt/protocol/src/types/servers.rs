@@ -1,6 +1,7 @@
 use core::fmt;
 use std::path::PathBuf;
 use colored::{self, Colorize};
+use serde::{Deserialize, Serialize};
 use tabled::Table;
 
 use crate::views::OutServer;
