@@ -10,8 +10,7 @@ use tabled::Table;
 // -------------------
 
 use protocol::{
-	views::OutServer,
-	types::{ Server, StdIo, State }
+	types::{ Server, ServerConfig, State, StdIo }, views::OutServer
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -70,7 +69,8 @@ impl Manager {
 				description: des,
 				state: State::Stopped,
 				io: None,
-				path: path.to_path_buf()
+				path: path.to_path_buf(),
+				config: ServerConfig::new()
 			};
 		match self.servers.insert(generate_next_id(), server) {
 			Some(_) => Err(Error),
