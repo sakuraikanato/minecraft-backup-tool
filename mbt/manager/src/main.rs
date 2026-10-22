@@ -37,9 +37,8 @@ use interprocess::local_socket::{
 static CURRENT_NUM: AtomicI32 = AtomicI32::new(-1);
 
 
-fn start_subprocess(ip: &str) -> Result<StdIo, std::io::Error> {
-	let mut child = Command::new("ping")
-		.arg(ip)
+fn start_server(server: &Server) -> Result<StdIo, std::io::Error> {
+	let mut child = Command::new(&server.path)
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
@@ -143,6 +142,9 @@ async fn main() -> Result<(), tokio::io::Error> {
 						send(sender, &"IDが存在しません").await;
 					}
 				};
+			},
+			Request::Start { server_id} => {
+				let stdio = start_subprocess()
 			},
 			_ => {
 				println!("不正、または未実装のコマンドです");
