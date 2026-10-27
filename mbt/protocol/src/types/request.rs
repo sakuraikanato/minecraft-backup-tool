@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::types::ServerConfigUpdate;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Options {
 
@@ -28,6 +30,11 @@ pub enum Request {
         name: Option<String>,
         description: Option<String>,
         path: Option<PathBuf>
+    },
+    #[serde(rename = "update_option")]
+    UpdateOption {
+        server_id: i32,
+        data: ServerConfigUpdate
     },
     #[serde(rename = "delete")]
     Delete {
