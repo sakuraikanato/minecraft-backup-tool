@@ -78,24 +78,21 @@ impl Manager {
 		}
 	}
 
-	pub fn update(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<PathBuf>) -> Result<(), Error> {
+	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<P>) -> Result<(), Error> {
 		let server = match self.servers.get_mut(&server_id) {
 			Some(v) => v,
 			None => return Err(Error)
 		};
-
-		server.name = match name {
-			Some(s) => s.to_string(),
-			None => server.name.clone()
-		};
-		server.description = match description {
-			Some(s) => Some(s.to_string()),
-			None => server.description.clone()
-		};
-		server.path = match path {
-			Some(p) => PathBuf::from(p),
-			None => server.path.clone()
-		};
+		
+		if let Some(name) = name {
+			server.name = name.clone();
+		}
+		if let Some(description) = description {
+			server.description = Some(description.clone());
+		}
+		if let Some(path) = path {
+			server.path = PathBuf::from(path.as_ref())
+		}
 		Ok(())
 	}
 
