@@ -27,6 +27,15 @@ pub struct ServerConfig {
 	pub program_args: Vec<String>
 }
 
+#[derive(Debug)]
+pub struct ServerConfigUpdate {
+	pub java_path: Option<PathBuf>,
+	pub min_memory_mb: Option<u32>,
+	pub max_memory_mb: Option<u32>,
+	pub jvm_args: Option<Vec<String>>,
+	pub program_args: Option<Vec<String>>
+}
+
 impl fmt::Display for Server {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let color_state = match self.state {
@@ -52,11 +61,31 @@ impl fmt::Display for Server {
 	}
 }
 
+
+
 impl ServerConfig {
 	pub fn new() -> Self {
 		Self {
 			..Default::default()
 		}
+	}
+
+	pub fn update(&mut self, update: ServerConfigUpdate) {
+		if let Some(java_path) = update.java_path {
+			self.java_path = Some(java_path);
+		};
+		if let Some(min_memory) = update.min_memory_mb {
+			self.min_memory_mb = min_memory;
+		};
+		if let Some(max_memory) = update.max_memory_mb {
+			self.max_memory_mb = max_memory;
+		};
+		if let Some(jvm_args) = update.jvm_args {
+			self.jvm_args = jvm_args;
+		};
+		if let Some(program_args) = update.program_args {
+			self.program_args = program_args;
+		};
 	}
 }
 
@@ -69,5 +98,11 @@ impl Default for ServerConfig {
 				jvm_args: Vec::<String>::new(),
 				program_args: Vec::<String>::new()
 			}
+	}
+}
+
+impl Default for ServerConfigUpdate {
+	fn default() -> Self {
+			Self { java_path: None, min_memory_mb: None, max_memory_mb: None, jvm_args: None, program_args: None }
 	}
 }
