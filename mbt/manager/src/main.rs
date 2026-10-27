@@ -15,9 +15,7 @@ use tokio::{
 	try_join
 };
 
-use protocol::{
-	types::{ Request, Server, StdIo, State }
-};
+use protocol::types::{ self, MmsError, Request, Response, Server, State, StdIo };
 mod managers;
 use managers::Manager;
 mod managerExt;
@@ -63,6 +61,16 @@ async fn read_line(stdout: ChildStdout) {
 
 async fn send<T: Debug>(sender: &Stream, object: &T) {
 	println!("{:?}", object); //テスト
+}
+
+async fn response(sender: &mut Stream, res: &Response) -> types::Result<()> {
+	let json = match serde_json::to_string(res) {
+		Ok(s) => s,
+		Err(_e) => return Err(MmsError::Except)
+	};
+	let message = format!("{json}\n");
+	sender.write_all(message.as_bytes());
+	Ok(())
 }
 
 #[tokio::main(flavor = "current_thread")]
