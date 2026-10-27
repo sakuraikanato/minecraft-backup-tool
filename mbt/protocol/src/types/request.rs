@@ -36,6 +36,9 @@ pub enum Request {
         server_id: i32,
         data: ServerConfigUpdate
     },
+    GetCondig {
+        server_id: i32,
+    },
     #[serde(rename = "delete")]
     Delete {
         server_id: i32

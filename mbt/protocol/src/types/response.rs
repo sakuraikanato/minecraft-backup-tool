@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 use serde::{ Serialize, Deserialize };
 
-use crate::types::{ State };
+use crate::types::{ ServerConfig, State };
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ResServer {
@@ -14,7 +14,7 @@ pub struct ResServer {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum DataOrError<T> {
   Data { data: T },
-  Error { error: T}
+  Error
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,6 +26,10 @@ pub enum Response {
   Servers {
     success: bool,
     data: DataOrError<HashMap<i32, ResServer>>,
+  },
+  Configs {
+    success: bool,
+    data: DataOrError<ServerConfig>
   },
   Message {
     success: bool,

@@ -28,7 +28,7 @@ pub struct ServerUpdate<P: AsRef<Path>> {
 	pub config: Option<ServerConfigUpdate>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ServerConfig {
 	pub java_path: Option<PathBuf>,
 	pub min_memory_mb: u32,
