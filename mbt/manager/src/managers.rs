@@ -10,7 +10,7 @@ use tabled::Table;
 // -------------------
 
 use protocol::{
-	types::{ Server, ServerConfig, State, StdIo }, views::OutServer
+	types::{ self, Server, ServerConfig, State, StdIo, MmsError }, views::OutServer
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -59,7 +59,7 @@ impl Manager {
 		}
 	}
 
-	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) -> Result<(), Error> {
+	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) -> types::Result<()> {
 		let des = match description {
 			Some(v) => Some(String::from(v)), 
 			None => None
@@ -73,15 +73,15 @@ impl Manager {
 				config: ServerConfig::new()
 			};
 		match self.servers.insert(generate_next_id(), server) {
-			Some(_) => Err(Error),
+			Some(_) => Err(MmsError::Except),
 			None => Ok(())
 		}
 	}
 
-	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<P>) -> Result<(), Error> {
+	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<P>) -> types::Result<()> {
 		let server = match self.servers.get_mut(&server_id) {
 			Some(v) => v,
-			None => return Err(Error)
+			None => return Err(MmsError::NotFound)
 		};
 		
 		if let Some(name) = name {
@@ -96,10 +96,10 @@ impl Manager {
 		Ok(())
 	}
 
-	pub fn delete(&mut self, server_id: i32) -> Result<(), Error> {
+	pub fn delete(&mut self, server_id: i32) -> types::Result<()> {
 		match self.servers.remove(&server_id) {
 			Some(_) => Ok(()),
-			None => Err(Error)
+			None => Err(MmsError::NotFound)
 		}
 	}
 }
