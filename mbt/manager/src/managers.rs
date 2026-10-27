@@ -105,6 +105,28 @@ impl Manager {
 			server.path = PathBuf::from(path.as_ref());
 			change_count += 1;
 		}
+		if let Some(config) = update.config {
+			if let Some(java_path) = config.java_path {
+				server.config.java_path = Some(java_path);
+				change_count += 1;
+			}
+			if let Some(min_memory_mb) = config.min_memory_mb {
+				server.config.min_memory_mb = min_memory_mb;
+				change_count += 1;
+			}
+			if let Some(max_memory_mb) = config.max_memory_mb {
+				server.config.max_memory_mb = max_memory_mb;
+				change_count += 1;
+			}
+			if let Some(jvm_args) = config.jvm_args {
+				server.config.jvm_args = jvm_args;
+				change_count += 1;
+			}
+			if let Some(program_args) = config.program_args {
+				server.config.program_args = program_args;
+				change_count += 1;
+			}
+		}
 		Ok(change_count)
 	}
 
