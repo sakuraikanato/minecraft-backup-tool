@@ -4,7 +4,8 @@ use std::io;
 use serde_json;
 
 #[derive(Debug)]
-pub enum Error {
+pub enum MmsError {
   Io(io::Error),
-  Json(serde_json::Error)
+  Json(serde_json::Error),
+  NotFound,
 }
