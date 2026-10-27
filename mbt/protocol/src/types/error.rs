@@ -8,4 +8,5 @@ pub enum MmsError {
   Io(io::Error),
   Json(serde_json::Error),
   NotFound,
+  Except
 }
