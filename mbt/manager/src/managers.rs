@@ -10,7 +10,7 @@ use tabled::Table;
 // -------------------
 
 use protocol::{
-	types::{ self, Server, ServerConfig, State, StdIo, MmsError }, views::OutServer
+	types::{ self, MmsError, Server, ServerConfig, ServerUpdate, State, StdIo }, views::OutServer
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -78,22 +78,34 @@ impl Manager {
 		}
 	}
 
-	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<P>) -> types::Result<()> {
+	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, update: ServerUpdate<P>) -> types::Result<i32> {
 		let server = match self.servers.get_mut(&server_id) {
 			Some(v) => v,
 			None => return Err(MmsError::NotFound)
 		};
+		let mut change_count = 0;
 		
-		if let Some(name) = name {
+		if let Some(name) = update.name {
 			server.name = name.clone();
+			change_count += 1;
 		}
-		if let Some(description) = description {
+		if let Some(description) = update.description {
 			server.description = Some(description.clone());
+			change_count += 1;
 		}
-		if let Some(path) = path {
-			server.path = PathBuf::from(path.as_ref())
+		if let Some(state) = update.state {
+			server.state = state;
+			change_count += 1;
 		}
-		Ok(())
+		if let Some(io) = update.io {
+			server.io = Some(io);
+			change_count += 1;
+		}
+		if let Some(path) = update.path {
+			server.path = PathBuf::from(path.as_ref());
+			change_count += 1;
+		}
+		Ok(change_count)
 	}
 
 	pub fn delete(&mut self, server_id: i32) -> types::Result<()> {

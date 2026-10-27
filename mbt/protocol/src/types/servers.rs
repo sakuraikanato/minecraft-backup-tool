@@ -1,5 +1,5 @@
 use core::fmt;
-use std::path::PathBuf;
+use std::path::{ PathBuf, Path };
 use colored::{self, Colorize};
 use serde::{Deserialize, Serialize};
 use tabled::{Table, derive, settings::TableOption};
@@ -19,6 +19,16 @@ pub struct Server {
 }
 
 #[derive(Debug)]
+pub struct ServerUpdate<P: AsRef<Path>> {
+	pub name: Option<String>,
+	pub description: Option<String>,
+	pub state: Option<State>,
+	pub io: Option<StdIo>,
+	pub path: Option<P>,
+	pub config: Option<ServerConfigUpdate>
+}
+
+#[derive(Debug)]
 pub struct ServerConfig {
 	pub java_path: Option<PathBuf>,
 	pub min_memory_mb: u32,
@@ -27,7 +37,7 @@ pub struct ServerConfig {
 	pub program_args: Vec<String>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ServerConfigUpdate {
 	pub java_path: Option<PathBuf>,
 	pub min_memory_mb: Option<u32>,
@@ -98,6 +108,12 @@ impl Default for ServerConfig {
 				jvm_args: Vec::<String>::new(),
 				program_args: Vec::<String>::new()
 			}
+	}
+}
+
+impl Default for ServerUpdate<String> {
+	fn default() -> Self {
+		Self { name: None, description: None, state: None, io: None, path: None, config: None }
 	}
 }
 
