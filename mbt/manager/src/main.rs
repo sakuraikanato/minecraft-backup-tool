@@ -129,12 +129,6 @@ async fn main() -> Result<(), tokio::io::Error> {
 				};
 			},
 			Request::Update { server_id, name, description, path } => {
-				match server_list.update(server_id, &name, &description, &path){
-					Ok(v) => v,
-					Err(_) => {
-						send(sender, &"IDが存在しません").await;
-					}
-				};
 			},
 			Request::Delete { server_id } => {
 				match server_list.delete(server_id) {
