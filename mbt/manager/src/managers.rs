@@ -10,8 +10,7 @@ use tabled::Table;
 // -------------------
 
 use protocol::{
-	views::OutServer,
-	types::{ Server, StdIo, State }
+	types::{ self, MmsError, Server, ServerConfig, ServerUpdate, State, StdIo }, views::OutServer
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -60,7 +59,7 @@ impl Manager {
 		}
 	}
 
-	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) -> Result<(), Error> {
+	pub fn create(&mut self, name: &String, description: &Option<String>, path: &Path) -> types::Result<()> {
 		let des = match description {
 			Some(v) => Some(String::from(v)), 
 			None => None
@@ -70,39 +69,71 @@ impl Manager {
 				description: des,
 				state: State::Stopped,
 				io: None,
-				path: path.to_path_buf()
+				path: path.to_path_buf(),
+				config: ServerConfig::new()
 			};
 		match self.servers.insert(generate_next_id(), server) {
-			Some(_) => Err(Error),
+			Some(_) => Err(MmsError::Except),
 			None => Ok(())
 		}
 	}
 
-	pub fn update(&mut self, server_id: i32, name: &Option<String>, description: &Option<String>, path: &Option<PathBuf>) -> Result<(), Error> {
+	pub fn update<P: AsRef<Path>>(&mut self, server_id: i32, update: ServerUpdate<P>) -> types::Result<i32> {
 		let server = match self.servers.get_mut(&server_id) {
 			Some(v) => v,
-			None => return Err(Error)
+			None => return Err(MmsError::NotFound)
 		};
-
-		server.name = match name {
-			Some(s) => s.to_string(),
-			None => server.name.clone()
-		};
-		server.description = match description {
-			Some(s) => Some(s.to_string()),
-			None => server.description.clone()
-		};
-		server.path = match path {
-			Some(p) => PathBuf::from(p),
-			None => server.path.clone()
-		};
-		Ok(())
+		let mut change_count = 0;
+		
+		if let Some(name) = update.name {
+			server.name = name.clone();
+			change_count += 1;
+		}
+		if let Some(description) = update.description {
+			server.description = Some(description.clone());
+			change_count += 1;
+		}
+		if let Some(state) = update.state {
+			server.state = state;
+			change_count += 1;
+		}
+		if let Some(io) = update.io {
+			server.io = Some(io);
+			change_count += 1;
+		}
+		if let Some(path) = update.path {
+			server.path = PathBuf::from(path.as_ref());
+			change_count += 1;
+		}
+		if let Some(config) = update.config {
+			if let Some(java_path) = config.java_path {
+				server.config.java_path = Some(java_path);
+				change_count += 1;
+			}
+			if let Some(min_memory_mb) = config.min_memory_mb {
+				server.config.min_memory_mb = min_memory_mb;
+				change_count += 1;
+			}
+			if let Some(max_memory_mb) = config.max_memory_mb {
+				server.config.max_memory_mb = max_memory_mb;
+				change_count += 1;
+			}
+			if let Some(jvm_args) = config.jvm_args {
+				server.config.jvm_args = jvm_args;
+				change_count += 1;
+			}
+			if let Some(program_args) = config.program_args {
+				server.config.program_args = program_args;
+				change_count += 1;
+			}
+		}
+		Ok(change_count)
 	}
 
-	pub fn delete(&mut self, server_id: i32) -> Result<(), Error> {
+	pub fn delete(&mut self, server_id: i32) -> types::Result<()> {
 		match self.servers.remove(&server_id) {
 			Some(_) => Ok(()),
-			None => Err(Error)
+			None => Err(MmsError::NotFound)
 		}
 	}
 }
