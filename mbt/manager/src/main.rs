@@ -20,6 +20,7 @@ use protocol::{
 };
 mod managers;
 use managers::Manager;
+mod managerExt;
 
 use std::{collections::HashMap, fmt::Debug, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
