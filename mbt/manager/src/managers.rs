@@ -10,7 +10,7 @@ use tabled::Table;
 // -------------------
 
 use protocol::{
-	types::{ self, MmsError, Server, ServerConfig, ServerUpdate, State, StdIo }, views::OutServer
+	types::{ self, MmsError, ResServer, Server, ServerConfig, ServerConfigUpdate, ServerUpdate, State, StdIo }, views::OutServer
 };
 
 const DATA_PATH: &str = "./manager/data/server_id.txt";
@@ -136,6 +136,44 @@ impl Manager {
 			None => Err(MmsError::NotFound)
 		}
 	}
+
+	pub fn change_state(&mut self, id: i32, state: State) -> types::Result<()> {
+    let res = self.update(id, ServerUpdate {
+      state: Some(state),
+      ..Default::default()
+    });
+    match res {
+      Ok(_) => Ok(()),
+      Err(e) => Err(e)
+    }
+  }
+
+  pub fn change_io(&mut self, id: i32, io: StdIo) -> types::Result<()> {
+    let res = self.update(id, ServerUpdate {
+      io: Some(io), ..Default::default() 
+    });
+    match res {
+      Ok(_) => Ok(()),
+      Err(e) => Err(e)
+    }
+  }
+
+  pub fn change_config(&mut self, id: i32, config: ServerConfigUpdate) -> types::Result<()> {
+    let res = self.update(id, ServerUpdate { 
+      config: Some(config), ..Default::default() 
+    });
+    match res {
+      Ok(_) => Ok(()),
+      Err(e) => Err(e)
+    }
+  }
+
+  pub fn list_res(&self) -> HashMap<i32, ResServer> {
+    self.servers.iter().map(|(id, server)| {
+      let res = server.into();
+      (id.clone(), res)
+    }).collect()
+  }
 }
 
 impl fmt::Display for Manager {
