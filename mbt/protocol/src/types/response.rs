@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 use serde::{ Serialize, Deserialize };
 
-use crate::types::{ ServerConfig, State };
+use crate::types::{ Server, ServerConfig, State };
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ResServer {
@@ -9,6 +9,12 @@ pub struct ResServer {
   description: Option<String>,
   state: State,
   path: PathBuf
+}
+
+impl From<&Server> for ResServer {
+  fn from(value: &Server) -> Self {
+      Self { name: value.name.clone(), description: value.description.clone(), state: value.state.clone(), path: value.path.clone() }
+  }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
