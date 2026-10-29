@@ -15,10 +15,9 @@ use tokio::{
 	try_join
 };
 
-use protocol::types::{ self, MmsError, Request, Response, Server, State, StdIo };
+use protocol::types::{ self, DataOrError, MmsError, Request, Response, Server, State, StdIo };
 mod managers;
 use managers::Manager;
-mod managerExt;
 
 use std::{collections::HashMap, fmt::Debug, path::Path, process::Stdio};
 use tokio_util::codec::{FramedRead, LinesCodec};
@@ -63,7 +62,7 @@ async fn send<T: Debug>(sender: &Stream, object: &T) {
 	println!("{:?}", object); //テスト
 }
 
-async fn response(sender: &mut Stream, res: &Response) -> types::Result<()> {
+async fn response(sender: &Stream, res: &Response) -> types::Result<()> {
 	let json = match serde_json::to_string(res) {
 		Ok(s) => s,
 		Err(_e) => return Err(MmsError::Except)
@@ -116,8 +115,10 @@ async fn main() -> Result<(), tokio::io::Error> {
 		};
 		let _ = match request {
 			Request::List {} => {
-				let servers = server_list.list();
-				send(sender, &server_list).await;
+				let servers = server_list.list_res();
+				// send(sender, &server_list).await;
+				let res = Response::Servers { success: true, data: DataOrError::Data { data: servers } };
+				response(&sender, &res);
 			}
 			Request::Info { server_id } => { 
 				let server: &Server = match server_list.info(server_id) {
