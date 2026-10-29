@@ -1,3 +1,5 @@
+use core::panic;
+
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     try_join,
@@ -7,7 +9,7 @@ use interprocess::local_socket::{
 	tokio::{ prelude::*, Stream },
 	GenericFilePath, GenericNamespaced
 };
-use protocol::types::{ Request, Options };
+use protocol::types::{ DataOrError, Options, Request, Response };
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,11 +28,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let request = Request::List {  };
   let json = serde_json::to_string(&request)?;
   let message = format!("{json}\n");
-  let send = sender.write_all(message.as_bytes());
-  let rec = recver.read_line(&mut buff);
-  try_join!(rec, send);
+  let send = sender.write_all(message.as_bytes()).await;
+  let n = recver.read_line(&mut buff).await?;
+  println!("data: {buff}");
+  let res = serde_json::from_str::<Response>(&buff)?;
+  let servers = match res {
+    Response::Servers { success, data } => {
+        if success == true {
+            match data {
+                DataOrError::Data { data } => {
+                    data
+                }
+                _ => {
+                    println!("error");
+                    panic!();
+                }
+            }
+        } else {
+            println!("失敗");
+            panic!()
+        }
+    }
+    _ => {
+        println!("error2");
+        panic!();
+    }
+  };
 
-  println!("success: {buff}");
+  println!("success: {:?}", servers);
 
   Ok(())
 }

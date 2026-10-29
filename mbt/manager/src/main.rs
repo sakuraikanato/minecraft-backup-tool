@@ -62,13 +62,14 @@ async fn send<T: Debug>(sender: &Stream, object: &T) {
 	println!("{:?}", object); //テスト
 }
 
-async fn response(sender: &Stream, res: &Response) -> types::Result<()> {
+async fn response(mut sender: &Stream, res: &Response) -> types::Result<()> {
 	let json = match serde_json::to_string(res) {
 		Ok(s) => s,
 		Err(_e) => return Err(MmsError::Except)
 	};
+	println!("{json}");
 	let message = format!("{json}\n");
-	sender.write_all(message.as_bytes());
+	let _ = sender.write_all(message.as_bytes()).await;
 	Ok(())
 }
 
@@ -118,7 +119,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 				let servers = server_list.list_res();
 				// send(sender, &server_list).await;
 				let res = Response::Servers { success: true, data: DataOrError::Data { data: servers } };
-				response(&sender, &res);
+				let _ = response(&mut sender, &res).await;
 			}
 			Request::Info { server_id } => { 
 				let server: &Server = match server_list.info(server_id) {
