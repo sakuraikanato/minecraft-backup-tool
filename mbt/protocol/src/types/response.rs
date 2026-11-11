@@ -8,40 +8,39 @@ pub struct ResServer {
   name: String,
   description: Option<String>,
   state: State,
-  path: PathBuf
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ResError {
-  code: String,
-  message: String
+  path: PathBuf,
+  config: ServerConfig
 }
 
 impl From<&Server> for ResServer {
   fn from(value: &Server) -> Self {
-    Self { name: value.name.clone(), description: value.description.clone(), state: value.state.clone(), path: value.path.clone() }
+    Self { name: value.name.clone(), description: value.description.clone(), state: value.state.clone(), path: value.path.clone(), config: value.config.clone() }
   }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Response {
-  NonItem {
-    success: bool,
-    error: Option<ResError>
-  },
+  NonItem ,
   Servers {
-    success: bool,
-    data: Option<HashMap<i32, ResServer>>,
-    error: Option<ResError>
+    data: HashMap<i32, ResServer>,
+  },
+  ServerInfo {
+    data: ResServer,
   },
   Configs {
-    success: bool,
-    data: Option<ServerConfig>,
-    error: Option<ResError>
+    data: ServerConfig,
   },
   Message {
-    success: bool,
-    data: Option<String>,
-    error: Option<ResError>
+    data: String,
+  },
+  Error {
+    code: String,
+    message: String
+  }
+}
+
+impl Response {
+  pub fn gen_error(code: &str, message: &str) -> Response {
+    Response::Error { code: code.to_string(), message: message.to_string() }
   }
 }
