@@ -7,6 +7,7 @@ use serde_json;
 pub enum MmsError {
   Io(io::Error),
   Json(serde_json::Error),
+  Found,
   NotFound,
   Except
 }

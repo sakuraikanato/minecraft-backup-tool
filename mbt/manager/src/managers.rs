@@ -73,7 +73,7 @@ impl Manager {
 				config: ServerConfig::new()
 			};
 		match self.servers.insert(generate_next_id(), server) {
-			Some(_) => Err(MmsError::Except),
+			Some(_) => Err(MmsError::Found),
 			None => Ok(())
 		}
 	}
