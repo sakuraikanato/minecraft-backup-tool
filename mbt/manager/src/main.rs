@@ -15,7 +15,7 @@ use tokio::{
 	try_join
 };
 
-use protocol::types::{ self, DataOrError, MmsError, Request, Response, Server, State, StdIo };
+use protocol::types::{ self, MmsError, Request, Response, Server, State, StdIo };
 mod managers;
 use managers::Manager;
 
@@ -118,7 +118,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 			Request::List {} => {
 				let servers = server_list.list_res();
 				// send(sender, &server_list).await;
-				let res = Response::Servers { success: true, data: DataOrError::Data { data: servers } };
+				let res = Response::Servers { success: true, data: Some(servers), error: None };
 				let _ = response(&mut sender, &res).await;
 			}
 			Request::Info { server_id } => { 

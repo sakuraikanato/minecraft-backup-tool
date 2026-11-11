@@ -11,34 +11,37 @@ pub struct ResServer {
   path: PathBuf
 }
 
-impl From<&Server> for ResServer {
-  fn from(value: &Server) -> Self {
-      Self { name: value.name.clone(), description: value.description.clone(), state: value.state.clone(), path: value.path.clone() }
-  }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResError {
+  code: String,
+  message: String
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum DataOrError<T> {
-  Data { data: T },
-  Error
+impl From<&Server> for ResServer {
+  fn from(value: &Server) -> Self {
+    Self { name: value.name.clone(), description: value.description.clone(), state: value.state.clone(), path: value.path.clone() }
+  }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Response {
   NonItem {
     success: bool,
-    error: Option<String>
+    error: Option<ResError>
   },
   Servers {
     success: bool,
-    data: DataOrError<HashMap<i32, ResServer>>,
+    data: Option<HashMap<i32, ResServer>>,
+    error: Option<ResError>
   },
   Configs {
     success: bool,
-    data: DataOrError<ServerConfig>
+    data: Option<ServerConfig>,
+    error: Option<ResError>
   },
   Message {
     success: bool,
-    data: DataOrError<String>,
+    data: Option<String>,
+    error: Option<ResError>
   }
 }
