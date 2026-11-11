@@ -31,8 +31,13 @@ pub enum Response {
     data: ServerConfig,
   },
   Message {
+    data: String
+  },
+  SessionStart,
+  SessionMessage {
     data: String,
   },
+  SessionEnd,
   Error {
     code: String,
     message: String
