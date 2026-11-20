@@ -33,7 +33,7 @@ pub enum Request {
         config: Option<ServerConfigUpdate>
     },
     #[serde(rename = "update_option")]
-    GetCondig {
+    GetConfig {
         server_id: i32,
     },
     #[serde(rename = "delete")]
