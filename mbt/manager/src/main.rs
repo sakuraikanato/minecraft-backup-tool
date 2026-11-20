@@ -15,7 +15,7 @@ use tokio::{
 	try_join
 };
 
-use protocol::types::{ self, MmsError, Request, ResServer, Response, Server, State, StdIo };
+use protocol::types::{ self, MmsError, Request, ResServer, Response, Server, ServerConfig, ServerConfigUpdate, State, StdIo };
 mod managers;
 use managers::Manager;
 
@@ -154,8 +154,16 @@ async fn main() -> Result<(), tokio::io::Error> {
 					}
 				};
 			},
-			Request::Update { server_id, name, description, path } => {
-				let res = server_list.update(server_id, types::ServerUpdate::<PathBuf> { name, description, path, ..Default::default()});
+			Request::Update { server_id, name, description, path, config } => {
+				let res = server_list.update(
+					server_id, 
+					types::ServerUpdate::<PathBuf> {
+						name, 
+						description, 
+						path, 
+						config,
+						..Default::default()}
+				);
 				match res {
 					Ok(_) => {
 						let _ = response(sender, &Response::NonItem).await;
