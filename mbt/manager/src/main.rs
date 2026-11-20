@@ -120,6 +120,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 				let res = Response::Servers { data: servers };
 				let _ = response(&mut sender, &res).await;
 			}
+
 			Request::Info { server_id } => { 
 				let res_server: ResServer = match server_list.info(server_id) {
 					Some(v) => ResServer::from(v),
@@ -131,15 +132,30 @@ async fn main() -> Result<(), tokio::io::Error> {
 				let res = Response::ServerInfo { data: res_server };
 				let _ = response(sender, &res);
 			},
+
 			Request::Create { name, description, path } => {
-				match server_list.create(&name, &description, &path) {
-					Ok(v) => v,
-					Err(_) => {
-						send(sender, &"IDが存在しません").await;
+				let _ = match server_list.create(&name, &description, &path) {
+					Ok(_) => {response(sender, &Response::NonItem)},
+					Err(e) => {
+						match e {
+							MmsError::Found => {
+								let _ = response(sender, 
+									&Response::gen_error("ALREADY_EXISTS", "すでに存在するIDが指定されました。（内部ファイルが破損している可能性があります。）")
+								);
+								continue;
+							},
+							_ => {
+								let _ = response(sender, 
+									&Response::gen_error("INTERNAL_ERROR", "想定外のエラーが発生しました。")
+								);
+								continue;
+							}
+						};
 					}
 				};
 			},
 			Request::Update { server_id, name, description, path } => {
+				let _ = server_list.update(server_id, types::ServerUpdate::<PathBuf> { name, description, path, ..Default::default()});
 			},
 			Request::Delete { server_id } => {
 				match server_list.delete(server_id) {

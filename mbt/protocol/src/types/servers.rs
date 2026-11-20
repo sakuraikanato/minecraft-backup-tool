@@ -111,7 +111,7 @@ impl Default for ServerConfig {
 	}
 }
 
-impl Default for ServerUpdate<String> {
+impl<P: AsRef<Path>> Default for ServerUpdate<P> {
 	fn default() -> Self {
 		Self { name: None, description: None, state: None, io: None, path: None, config: None }
 	}

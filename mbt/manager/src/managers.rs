@@ -138,7 +138,7 @@ impl Manager {
 	}
 
 	pub fn change_state(&mut self, id: i32, state: State) -> types::Result<()> {
-    let res = self.update(id, ServerUpdate {
+    let res = self.update(id, ServerUpdate::<PathBuf> {
       state: Some(state),
       ..Default::default()
     });
@@ -149,7 +149,7 @@ impl Manager {
   }
 
   pub fn change_io(&mut self, id: i32, io: StdIo) -> types::Result<()> {
-    let res = self.update(id, ServerUpdate {
+    let res = self.update(id, ServerUpdate::<PathBuf> {
       io: Some(io), ..Default::default() 
     });
     match res {
@@ -159,7 +159,7 @@ impl Manager {
   }
 
   pub fn change_config(&mut self, id: i32, config: ServerConfigUpdate) -> types::Result<()> {
-    let res = self.update(id, ServerUpdate { 
+    let res = self.update(id, ServerUpdate::<PathBuf> { 
       config: Some(config), ..Default::default() 
     });
     match res {
