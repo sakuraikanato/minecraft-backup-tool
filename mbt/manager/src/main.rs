@@ -155,7 +155,23 @@ async fn main() -> Result<(), tokio::io::Error> {
 				};
 			},
 			Request::Update { server_id, name, description, path } => {
-				let _ = server_list.update(server_id, types::ServerUpdate::<PathBuf> { name, description, path, ..Default::default()});
+				let res = server_list.update(server_id, types::ServerUpdate::<PathBuf> { name, description, path, ..Default::default()});
+				match res {
+					Ok(_) => {
+						let _ = response(sender, &Response::NonItem).await;
+					},
+					Err(e) => {
+						match e {
+							MmsError::NotFound => {
+								let _ = response(sender, &Response::gen_error("NOT_FOUND", "存在しないIDが指定されました。")).await;
+							},
+							_ => {
+								let _ = response(sender, &Response::gen_error("INTERNAL_ERROR", "想定外のエラーが発生しました。")).await;
+							}
+						};
+					}
+				};
+				continue;
 			},
 			Request::Delete { server_id } => {
 				match server_list.delete(server_id) {
