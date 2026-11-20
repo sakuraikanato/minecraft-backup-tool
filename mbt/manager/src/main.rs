@@ -175,9 +175,11 @@ async fn main() -> Result<(), tokio::io::Error> {
 			},
 			Request::Delete { server_id } => {
 				match server_list.delete(server_id) {
-					Ok(v) => v,
+					Ok(_) => {
+						let _ = response(sender, &Response::NonItem ); 
+					},
 					Err(_) => {
-						send(sender, &"IDが存在しません").await;
+						let _ = response(sender, &Response::gen_error("NOT_FOUND", "存在しないIDが指定されました。")).await;
 					}
 				};
 			},
